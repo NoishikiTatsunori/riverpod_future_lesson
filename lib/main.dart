@@ -1,7 +1,6 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_future_lesson/data/postal_code.dart';
 import 'package:riverpod_future_lesson/provider.dart';
 
 void main() {
@@ -31,32 +30,79 @@ class MyHomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final postalCode = ref.watch(apiProvider);
+    final familyPostalCode = ref.watch(apiFamilyProvider(ref.watch(postalCodeProvider)));
 
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              onChanged: (text) => onPostalCodeChanged(ref, text),
-            ),
-            postalCode.when(
-              data: (data) => Column(
-                children: [
-                  Text(data.data[0].en.prefcture),
-                  Text(data.data[0].en.address1),
-                  Text(data.data[0].en.address2),
-                  Text(data.data[0].en.address3),
-                  Text(data.data[0].en.address4),
-                ],
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              TextField(
+                onChanged: (text) => onPostalCodeChanged(ref, text),
               ),
-              error: (error, stack, data) => Text(error.toString()),
-              loading: (data) => const  CircularProgressIndicator(),
-            )
-          ],
+              Text('without family '),
+              Expanded(
+                child: postalCode.when(
+                  data: (data) => ListView.separated(
+                    itemCount: data.data.length,
+                    itemBuilder: (context, index) => ListTile(
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(data.data[index].en.prefcture),
+                          Text(data.data[index].en.address1),
+                          Text(data.data[index].en.address2),
+                          Text(data.data[index].en.address3),
+                          Text(data.data[index].en.address4),
+                        ],
+                      ),
+                    ),
+                    separatorBuilder: (context, index) => Divider(
+                      color: Colors.black,
+                    ),
+                  ),
+                  error: (error, stack) => Text(error.toString()),
+                  loading: () => AspectRatio(
+                    aspectRatio: 1,
+                    child: const CircularProgressIndicator(),
+                  ),
+                ),
+              ),
+              Text('with family '),
+              Expanded(
+                child: familyPostalCode.when(
+                  data: (data) => ListView.separated(
+                    itemCount: data.data.length,
+                    itemBuilder: (context, index) => ListTile(
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(data.data[index].en.prefcture),
+                          Text(data.data[index].en.address1),
+                          Text(data.data[index].en.address2),
+                          Text(data.data[index].en.address3),
+                          Text(data.data[index].en.address4),
+                        ],
+                      ),
+                    ),
+                    separatorBuilder: (context, index) => Divider(
+                      color: Colors.black,
+                    ),
+                  ),
+                  error: (error, stack) => Text(error.toString()),
+                  loading: () => AspectRatio(
+                    aspectRatio: 1,
+                    child: const CircularProgressIndicator(),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
